@@ -3,6 +3,7 @@ import json
 import snowflake.connector
 from dotenv import load_dotenv
 from AzureBlobMGMT import AzureBlobUtils
+import streamlit as st
 
 class SnowflakeConnection:
     def __init__(self):
@@ -57,3 +58,18 @@ class SnowflakeConnection:
         except snowflake.connector.errors.ProgrammingError as e:
             print(f"Error executing query: {str(e)}")
             raise
+
+    def get_tracking_numbers(self) -> list:
+        query = "SELECT TRACKINGNUMBER FROM WARRANTY_FORM_RESPONSE"
+        return [row[0] for row in self.execute_query(query)]
+
+    def get_warranty_response_by_tracking(self, tracking_number: str) -> dict:
+        query = f"SELECT * FROM WARRANTY_FORM_RESPONSE WHERE TRACKINGNUMBER = '{tracking_number}'"
+        result = self.execute_query(query)
+        if result:
+            columns = ["RESPONDER", "SUBMITDATE", "ADDRESS", "ISAPPLIANCEISSUE", "PRIMARYCONTACT",
+                       "PRIORITY", "TRACKINGNUMBER", "DATE", "UNITOCCUPIED", "JOBNUMBER",
+                       "ISSUEDESCRIPTION", "PROPERTYINFORMATION", "PROPERTYNAME",
+                       "NOTETOTRADEPARTNERS", "LOCATION", "APPLIANCEMODELSERIAL"]
+            return dict(zip(columns, result[0]))
+        return {}

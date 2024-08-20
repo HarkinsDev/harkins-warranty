@@ -25,15 +25,33 @@ def warranty_observation_page():
     st.title("🛠️ Submit Warranty Observation")
 
     fetcher = ProcoreDataFetcher()
+    snowflake_conn = SnowflakeConnection()
 
-    # Inputs for the Warranty Observation
-    project_id = st.text_input("Project ID", value="490956")  # Example default project ID
-    description = st.text_area("Description of the Issue")
+    # Dropdown to select a tracking number
+    tracking_numbers = snowflake_conn.get_tracking_numbers()
+    selected_tracking = st.selectbox("Select Tracking Number", tracking_numbers)
+
+    if selected_tracking:
+        # Fetch the warranty response based on the selected tracking number
+        warranty_response = snowflake_conn.get_warranty_response_by_tracking(selected_tracking)
+
+        # Populate the form fields with fetched data
+        if warranty_response:
+            st.write("**Responder:**", warranty_response.get("RESPONDER"))
+            st.write("**Submit Date:**", warranty_response.get("SUBMITDATE"))
+            st.write("**Address:**", warranty_response.get("ADDRESS"))
+            st.write("**Appliance Issue:**", warranty_response.get("ISAPPLIANCEISSUE"))
+            st.write("**Primary Contact:**", warranty_response.get("PRIMARYCONTACT"))
+            st.write("**Priority:**", warranty_response.get("PRIORITY"))
+            st.write("**Issue Description:**", warranty_response.get("ISSUEDESCRIPTION"))
+            st.write("**Location:**", warranty_response.get("LOCATION"))
+
+    description = st.text_area("Description of the Issue", value=warranty_response.get("ISSUEDESCRIPTION", ""))
     name = st.text_input("Observation Name", value="Warranty Observation")
     submit_button = st.button("Submit")
 
     if submit_button:
-        if project_id and description and name:
+        if selected_tracking and description and name:
             observation_data = {
                 "description": description,
                 "name": name,
