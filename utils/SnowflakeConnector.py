@@ -2,7 +2,6 @@ import os
 import json
 import snowflake.connector
 from dotenv import load_dotenv
-from AzureBlobMGMT import AzureBlobUtils
 import streamlit as st
 
 class SnowflakeConnection:
@@ -60,7 +59,7 @@ class SnowflakeConnection:
             raise
 
     def get_tracking_numbers(self) -> list:
-        query = "SELECT TRACKINGNUMBER FROM WARRANTY_FORM_RESPONSE"
+        query = "SELECT TRACKINGNUMBER FROM STANDARD_DB.WARRANTY.WARRANTY_FORM_RESPONSE"
         return [row[0] for row in self.execute_query(query)]
 
     def get_warranty_response_by_tracking(self, tracking_number: str) -> dict:

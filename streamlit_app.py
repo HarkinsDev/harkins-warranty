@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.ProcoreDataManager import ProcoreDataFetcher
-from utils.SnowflakeConnector import SnowflakeConnection
+from utils.SnowflakeConnector import SnowflakeConnection  # Ensure this path is correct
+
 # Initialize session state for login
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -25,7 +26,13 @@ def warranty_observation_page():
     st.title("🛠️ Submit Warranty Observation")
 
     fetcher = ProcoreDataFetcher()
-    snowflake_conn = SnowflakeConnection()
+    
+    # Debugging statement to ensure the module is imported correctly
+    try:
+        snowflake_conn = SnowflakeConnection()
+    except NameError as e:
+        st.error(f"Failed to initialize SnowflakeConnection: {str(e)}")
+        return
 
     # Dropdown to select a tracking number
     tracking_numbers = snowflake_conn.get_tracking_numbers()
