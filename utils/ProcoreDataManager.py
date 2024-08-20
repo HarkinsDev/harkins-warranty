@@ -69,3 +69,21 @@ class ProcoreDataFetcher:
         except Exception as e:
             logging.error(f"Exception occurred while creating observation: {e}")
             raise
+
+    def create_observation_for_project(self, project_id: int, observation_data: dict):
+        """Helper method to create an observation after fetching available observation types."""
+        observation_types = self.get_observation_types(project_id)
+        if observation_types is None:
+            logging.error("Failed to fetch observation types. Aborting operation.")
+            return None
+
+        if observation_types:
+            type_id = observation_types[0]["id"]  # Adjust as needed to pick a valid type
+            logging.debug(f"Using observation type ID: {type_id}")
+            observation_data["type_id"] = type_id
+            observation_data["observation_type"] = {"id": type_id}
+        else:
+            logging.error("No observation types available. Aborting operation.")
+            return None
+
+        return self.create_observation(observation_data, project_id)
