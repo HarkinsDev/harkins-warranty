@@ -25,8 +25,12 @@ def login_screen():
 def warranty_observation_page():
     st.title("🛠️ Submit Warranty Observation")
 
+    # Retrieve query parameters
+    query_params = st.query_params()
+    form_response_id = query_params.get('form_response_id', [None])[0]
+
     fetcher = ProcoreDataFetcher()
-    
+
     # Debugging statement to ensure the module is imported correctly
     try:
         snowflake_conn = SnowflakeConnection()
@@ -34,9 +38,18 @@ def warranty_observation_page():
         st.error(f"Failed to initialize SnowflakeConnection: {str(e)}")
         return
 
-    # Dropdown to select a tracking number
+    # Fetch tracking numbers from Snowflake
     tracking_numbers = snowflake_conn.get_tracking_numbers()
-    selected_tracking = st.selectbox("Select Tracking Number", tracking_numbers)
+    
+    # If form_response_id is provided, use it to pre-select the tracking number
+    selected_tracking = None
+    if form_response_id:
+        selected_tracking = snowflake_conn.get_tracking_number_by_form_response_id(form_response_id)
+        if selected_tracking not in tracking_numbers:
+            st.error("Invalid form response ID or tracking number not found.")
+            return
+    else:
+        selected_tracking = st.selectbox("Select Tracking Number", tracking_numbers)
 
     if selected_tracking:
         # Fetch the warranty response based on the selected tracking number
@@ -67,7 +80,7 @@ def warranty_observation_page():
                     "id": 32591  # Assumes this is the type ID for warranty
                 }
             }
-            new_observation = fetcher.create_observation(observation_data, int(project_id))
+            new_observation = fetcher.create_observation(observation_data, int(selected_tracking))
             if new_observation:
                 st.success("Warranty observation submitted successfully!")
                 st.write("New Observation:", new_observation)
