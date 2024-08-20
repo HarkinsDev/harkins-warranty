@@ -1,8 +1,6 @@
 import os
-import json
 import snowflake.connector
 from dotenv import load_dotenv
-import streamlit as st
 
 class SnowflakeConnection:
     def __init__(self):
@@ -63,7 +61,7 @@ class SnowflakeConnection:
         return [row[0] for row in self.execute_query(query)]
 
     def get_warranty_response_by_tracking(self, tracking_number: str) -> dict:
-        query = f"SELECT * FROM WARRANTY_FORM_RESPONSE WHERE TRACKINGNUMBER = '{tracking_number}'"
+        query = f"SELECT * FROM STANDARD_DB.WARRANTY.WARRANTY_FORM_RESPONSE WHERE TRACKINGNUMBER = '{tracking_number}'"
         result = self.execute_query(query)
         if result:
             columns = ["RESPONDER", "SUBMITDATE", "ADDRESS", "ISAPPLIANCEISSUE", "PRIMARYCONTACT",
@@ -72,3 +70,10 @@ class SnowflakeConnection:
                        "NOTETOTRADEPARTNERS", "LOCATION", "APPLIANCEMODELSERIAL"]
             return dict(zip(columns, result[0]))
         return {}
+
+    def get_tracking_number_by_form_response_id(self, form_response_id: str) -> str:
+        query = f"SELECT TRACKINGNUMBER FROM STANDARD_DB.WARRANTY.WARRANTY_FORM_RESPONSE WHERE FORM_RESPONSE_ID = '{form_response_id}'"
+        result = self.execute_query(query)
+        if result:
+            return result[0][0]
+        return None
