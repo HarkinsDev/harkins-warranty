@@ -72,7 +72,7 @@ class SnowflakeConnection:
         return {}
 
     def get_tracking_number_by_form_response_id(self, form_response_id: str) -> str:
-        query = f"SELECT TRACKINGNUMBER FROM STANDARD_DB.WARRANTY.WARRANTY_FORM_RESPONSE WHERE FORM_RESPONSE_ID = '{form_response_id}'"
+        query = f"SELECT TRACKINGNUMBER FROM STANDARD_DB.WARRANTY.WARRANTY_FORM_RESPONSE WHERE TRACKINGNUMBER = '{form_response_id}'"
         result = self.execute_query(query)
         if result:
             return result[0][0]
