@@ -26,7 +26,7 @@ def warranty_observation_page():
     st.title("🛠️ Submit Warranty Observation")
 
     # Retrieve query parameters
-    query_params = st.query_params()
+    query_params = st.query_params
     form_response_id = query_params.get('form_response_id', [None])[0]
 
     fetcher = ProcoreDataFetcher()
