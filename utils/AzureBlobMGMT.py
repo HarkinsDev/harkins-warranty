@@ -3,14 +3,14 @@ import gzip
 import json
 from azure.storage.blob import BlobServiceClient, ContainerClient, BlobLeaseClient
 from dotenv import load_dotenv
-
+import streamlit as st
 load_dotenv()
 
 class AzureBlobUtils:
 
     def __init__(self):
         # Load the connection string from environment variables
-        self.connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+        self.connection_string = st.secrets["AZURE_STORAGE_CONNECTION_STRING"]
         if not self.connection_string:
             raise ValueError("Azure Storage connection string not found in environment variables.")
 
