@@ -27,35 +27,44 @@ def warranty_observation_page():
 
     # Retrieve query parameters
     query_params = st.query_params
-    form_response_id = query_params.get('form_response_id', [None])[0]
+
+    # Retrieve form_response_id
+    form_response_id_str = query_params.get('form_response_id')
 
     fetcher = ProcoreDataFetcher()
 
-    # Debugging statement to ensure the module is imported correctly
     try:
         snowflake_conn = SnowflakeConnection()
     except NameError as e:
         st.error(f"Failed to initialize SnowflakeConnection: {str(e)}")
         return
 
-    # Fetch tracking numbers from Snowflake
-    tracking_numbers = snowflake_conn.get_tracking_numbers()
-    
-    # If form_response_id is provided, use it to pre-select the tracking number
-    selected_tracking = None
-    if form_response_id:
-        selected_tracking = snowflake_conn.get_tracking_number_by_form_response_id(form_response_id)
-        if selected_tracking not in tracking_numbers:
-            st.error("Invalid form response ID or tracking number not found.")
+    # Fetch tracking numbers along with responder and address details
+    tracking_info = snowflake_conn.get_tracking_info()
+
+    # Prepare options for the dropdown
+    tracking_options = [
+        f"{info['TRACKINGNUMBER']} - {info['ADDRESS']} - {info['RESPONDER']}" 
+        for info in tracking_info
+    ]
+
+    selected_option = None
+    if form_response_id_str:
+        selected_tracking_info = next(
+            (info for info in tracking_info if info['TRACKINGNUMBER'] == form_response_id_str), 
+            None
+        )
+        if selected_tracking_info:
+            selected_option = f"{selected_tracking_info['TRACKINGNUMBER']} - {selected_tracking_info['ADDRESS']} - {selected_tracking_info['RESPONDER']}"
+        else:
+            st.error(f"Invalid form response ID or tracking number not found for form_response_id: {form_response_id_str}")
             return
     else:
-        selected_tracking = st.selectbox("Select Tracking Number", tracking_numbers)
+        selected_option = st.selectbox("Select Tracking Number", tracking_options)
 
-    if selected_tracking:
-        # Fetch the warranty response based on the selected tracking number
+    if selected_option:
+        selected_tracking = selected_option.split(" - ")[0]
         warranty_response = snowflake_conn.get_warranty_response_by_tracking(selected_tracking)
-
-        # Populate the form fields with fetched data
         if warranty_response:
             st.write("**Responder:**", warranty_response.get("RESPONDER"))
             st.write("**Submit Date:**", warranty_response.get("SUBMITDATE"))

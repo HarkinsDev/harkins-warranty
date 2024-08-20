@@ -77,3 +77,10 @@ class SnowflakeConnection:
         if result:
             return result[0][0]
         return None
+    def get_tracking_info(self) -> list:
+        query = """
+        SELECT TRACKINGNUMBER, RESPONDER, ADDRESS 
+        FROM STANDARD_DB.WARRANTY.WARRANTY_FORM_RESPONSE
+        """
+        results = self.execute_query(query)
+        return [{"TRACKINGNUMBER": row[0], "RESPONDER": row[1], "ADDRESS": row[2]} for row in results]
